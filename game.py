@@ -2,11 +2,11 @@ from random import randint
 from time import sleep
 from os import system
 
-def continuar(message):
-    system('cls')
+def continuar(message, cls=True):
+    system('cls') if cls == True else ...
     print(message)
     sleep(1)
-    system('cls')
+    system('cls') if cls == True else ...
 
 
 def getInt(message):
@@ -19,13 +19,13 @@ def getInt(message):
             return intNum - 1
         
         except ValueError:
-            continuar('Valor inválido. Por favor, tente novamente.')
+            continuar('Valor inválido. Por favor, tente novamente.', cls=False)
             continue
 
 
 def printGame(matrix):
     c = 1
-
+    system('cls')
     print('    1    2    3')
 
     for row in matrix:
@@ -55,6 +55,18 @@ def getGameOrder():
     return player, CPU, playerFirst
 
 
+def getPlayerMove(played):
+    while True:
+        playerCol = getInt('\n''Insira a coluna da casa que deseja jogar: ')
+        playerRow = getInt('Insira a linha da casa que deseja jogar: ')
+
+        if (playerRow, playerCol) in played:
+            continuar('Você tentou jogar em uma casa já preenchida. tente novamente.', cls=False)
+            continue
+        else:
+            return playerRow, playerCol
+
+
 def getCPUMove(played):
     while True:
         CPURow = randint(0, 2)
@@ -64,16 +76,6 @@ def getCPUMove(played):
             continue
         else:
             return CPURow, CPUCol
-
-
-def checkPlayed(row, col, played, player=False):
-    if ((row, col) in played) and (player == True):
-        continuar('Sua jogada é inválida. Tente novamente.')
-        return False
-    elif ((row, col) in played) and (player == False):
-        return False
-    else:
-        return True
 
 
 def checkEnd(table):
@@ -90,14 +92,13 @@ def game():
             while True:
                 printGame(table)
 
-                playerCol = getInt('\n''Insira a coluna da casa que deseja jogar: ')
-                playerRow = getInt('Insira a linha da casa que deseja jogar: ')
+                playerRow, playerCol = getPlayerMove(played)
                 table[playerRow][playerCol] = player
                 played.append((playerRow, playerCol))
 
+                printGame(table)
                 sleep(1)
                 system('cls')
-                printGame(table)
 
                 CPURow, CPUCol = getCPUMove(played)
                 table[CPURow][CPUCol] = CPU
@@ -116,13 +117,11 @@ def game():
                 table[CPURow][CPUCol] = CPU
                 played.append((CPURow, CPUCol))
 
+                printGame(table)
                 sleep(1)
                 system('cls')
-                sleep(1)
-                printGame(table)
 
-                playerCol = getInt('\n''Insira a coluna da casa que deseja jogar: ')
-                playerRow = getInt('Insira a linha da casa que deseja jogar: ')
+                playerRow, playerCol = getPlayerMove(played)
                 table[playerRow][playerCol] = player
                 played.append((playerRow, playerCol))
 
