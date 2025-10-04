@@ -16,6 +16,7 @@ def getInt(message):
             if (intNum < 1) or (intNum > 3):
                 raise ValueError
 
+            # Index da tupla sempre será -1, pois inicia no 0
             return intNum - 1
         
         except ValueError:
@@ -55,30 +56,58 @@ def getGameOrder():
     return player, CPU, playerFirst
 
 
-def getPlayerMove(played):
+def played(winConditions, lastPlayed):
+    for i in winConditions:
+        if lastPlayed in winConditions[i]:
+            return False
+        # 8 é a última condição de vitória
+        elif i == 8 and lastPlayed not in winConditions[i]:
+            return True
+        else:
+            continue
+    
+
+def checkEnd(winConditions, lastPlayed, symbol):
+    for i in winConditions:
+        for j in range(len(winConditions[i])):
+            if winConditions[i][j] == lastPlayed:
+                winConditions[i][j] = symbol
+                
+    for i in winConditions:
+        if winConditions[i] == [symbol, symbol, symbol]:
+            print(f'Fim de jogo: {symbol} vence. \n')
+            return True, winConditions
+    else:
+        return False, winConditions # Else fora do for, senão sairia imediatamente
+
+
+def getPlayerMove(winConditions):
     while True:
         playerCol = getInt('\n''Insira a coluna da casa que deseja jogar: ')
         playerRow = getInt('Insira a linha da casa que deseja jogar: ')
 
-        if (playerRow, playerCol) in played:
+        if played(winConditions, (playerRow, playerCol)) == True:
             proceed('Você tentou jogar em uma casa já preenchida. tente novamente.', cls=False)
             continue
         else:
             return playerRow, playerCol
 
 
-def getCPUMove(played):
+def getCPUMove(winConditions):
     while True:
+        # 0, 1 e 2 são as possibilidades de valor da tupla
         CPURow = randint(0, 2)
         CPUCol = randint(0, 2)
 
-        if (CPURow, CPUCol) in played:
+        if played(winConditions, (CPURow, CPUCol)) == True:
             continue
         else:
             return CPURow, CPUCol
 
-
-def checkEnd(lastPlayed, symbol):
+                
+def game():
+    player, CPU, playerFirst = getGameOrder()
+    table = [[' ' for cols in range(3)] for rows in range(3)] # 3 linhas e 3 colunas
     winConditions = {
         1 : [(0, 0), (0, 1), (0, 2)],
         2 : [(1, 0), (1, 1), (1, 2)],
@@ -90,70 +119,85 @@ def checkEnd(lastPlayed, symbol):
         8 : [(0, 2), (1, 1), (2, 0)]
     }
 
-
-def game():
-    player, CPU, playerFirst = getGameOrder()
-    table = [[' ' for cols in range(3)] for rows in range(3)]
-    played = []
-
     while True:
         if playerFirst == True:
-            while True:
-                printGame(table)
-
-                playerRow, playerCol = getPlayerMove(played)
-                table[playerRow][playerCol] = player
-                played.append((playerRow, playerCol))
-
-                printGame(table)
-                sleep(1)
-                system('cls')
-
-                CPURow, CPUCol = getCPUMove(played)
-                table[CPURow][CPUCol] = CPU
-                played.append((CPURow, CPUCol))
-
-                printGame(table)
-                sleep(3)
-                system('cls')
-                continue
+            system('cls')
+            printGame(table)
+            
+            playerRow, playerCol = getPlayerMove(winConditions)
+            table[playerRow][playerCol] = player
+            
+            printGame(table)
+            gameEnded, winConditions = checkEnd(winConditions, (playerRow, playerCol), player)
+            if gameEnded == True:
+                break
+            sleep(1)
+            system('cls')
+            
+            CPURow, CPUCol = getCPUMove(winConditions)
+            table[CPURow][CPUCol] = CPU
+            
+            printGame(table)
+            gameEnded, winConditions = checkEnd(winConditions, (CPURow, CPUCol), CPU)
+            if gameEnded == True:
+                break
+            sleep(3)
+            continue
 
         else:
-            while True:
-                printGame(table)
-
-                CPURow, CPUCol = getCPUMove(played)
-                table[CPURow][CPUCol] = CPU
-                played.append((CPURow, CPUCol))
-
-                printGame(table)
-                sleep(1)
+            printGame(table)
+            sleep(1)
+            system('cls')
+            
+            CPURow, CPUCol = getCPUMove(winConditions)
+            table[CPURow][CPUCol] = CPU
+            
+            gameEnded, winConditions = checkEnd(winConditions, (CPURow, CPUCol), CPU)
+            if gameEnded == True:
+                break
+            
+            printGame(table)
+            
+            playerRow, playerCol = getPlayerMove(winConditions)
+            table[playerRow][playerCol] = player
+            
+            printGame(table)
+            gameEnded, winConditions = checkEnd(winConditions, (playerRow, playerCol), player)
+            if gameEnded == True:
+                break
+            sleep(3)
+            continue
+    
+    while True:
+        opt = (input('Deseja jogar novamente? (s/n): ').lower()).strip()
+    
+        match opt:
+            case 's':
+                return False
+            case 'n':
                 system('cls')
-
-                playerRow, playerCol = getPlayerMove(played)
-                table[playerRow][playerCol] = player
-                played.append((playerRow, playerCol))
-
-                printGame(table)
-                sleep(3)
-                system('cls')
+                print('Adeus.')
+                return True
+            case _:
+                proceed('Opção inválida. Por favor, tente novamente.')
                 continue
 
 
 def main():
-    system('cls')
-    print('Bem vindo ao jogo da velha! \n')
+    quitGame = False
 
-    while True:
+    while quitGame != True:
+        system('cls')
+        print('Bem vindo ao jogo da velha! \n')
         opt = (input('Deseja iniciar o jogo? (s/n): ').lower()).strip()
 
         match opt:
             case 's':
-                game()
+                quitGame = game()
             case 'n':
                 system('cls')
                 print('Adeus.')
-                break
+                quitGame = True
             case _:
                 proceed('Opção inválida. Por favor, tente novamente.')
                 continue
