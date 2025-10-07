@@ -65,16 +65,20 @@ def played(winConditions, lastPlayed):
             continue
     
 
-def checkEnd(winConditions, lastPlayed, symbol):
+def checkEnd(winConditions, lastPlayed, symbol, turn):
     for i in winConditions:
         for j in range(len(winConditions[i])):
             if winConditions[i][j] == lastPlayed:
                 winConditions[i][j] = symbol
-                
+    
     for i in winConditions:
         if winConditions[i] == [symbol, symbol, symbol]:
             print(f'Fim de jogo: {symbol} vence. \n')
             return True, winConditions
+        
+    if turn == 9:
+        print('Fim de jogo: Empate. \n')
+        return True, winConditions
     else:
         return False, winConditions # Else fora do for, senão sairia imediatamente
 
@@ -117,6 +121,7 @@ def getCPUMove(winConditions):
                 
 def game():
     player, CPU, playerFirst = getGameOrder()
+    turn = 1
     
     table = []
     c = 1
@@ -145,10 +150,11 @@ def game():
             
             system('cls')
             printGame(table)
-            gameEnded, winConditions = checkEnd(winConditions, (playerRow, playerCol), player)
+            gameEnded, winConditions = checkEnd(winConditions, (playerRow, playerCol), player, turn)
             if gameEnded == True:
                 break
             
+            turn += 1
             system('cls')
             printGame(table)
             sleep(1)
@@ -158,10 +164,11 @@ def game():
             table[CPURow][CPUCol] = CPU
             
             printGame(table)
-            gameEnded, winConditions = checkEnd(winConditions, (CPURow, CPUCol), CPU)
+            gameEnded, winConditions = checkEnd(winConditions, (CPURow, CPUCol), CPU, turn)
             if gameEnded == True:
                 break
             
+            turn += 1
             sleep(1)
             
             continue
@@ -176,10 +183,11 @@ def game():
             table[CPURow][CPUCol] = CPU
             
             printGame(table)
-            gameEnded, winConditions = checkEnd(winConditions, (CPURow, CPUCol), CPU)
+            gameEnded, winConditions = checkEnd(winConditions, (CPURow, CPUCol), CPU, turn)
             if gameEnded == True:
                 break
             
+            turn += 1
             sleep(1)
             system('cls')
             printGame(table)
@@ -189,10 +197,11 @@ def game():
             
             system('cls')
             printGame(table)
-            gameEnded, winConditions = checkEnd(winConditions, (playerRow, playerCol), player)
+            gameEnded, winConditions = checkEnd(winConditions, (playerRow, playerCol), player, turn)
             if gameEnded == True:
                 break
             
+            turn += 1
             continue
     
     while True:
